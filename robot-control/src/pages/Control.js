@@ -66,10 +66,10 @@ const handleMove = (event) => {
     right = Math.max(-100, Math.min(100, right));
 
     // 🔥 ESCALAR A PWM
-    let fl = Math.abs(left) * 2.5;
-    let rl = Math.abs(left) * 2.5;
-    let fr = Math.abs(right) * 2.5;
-    let rr = Math.abs(right) * 2.5;
+    let fl = Math.abs(left) * 85;
+    let rl = Math.abs(left) * 85;
+    let fr = Math.abs(right) * 85;
+    let rr = Math.abs(right) * 85;
 
     if (y >= 0) {
         adelante(fl, rl, fr, rr);
