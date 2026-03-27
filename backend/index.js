@@ -10,6 +10,6 @@ app.use(express.json());
 
 app.use("/robot", robotRoutes);
 
-app.listen(3000, () => {
-    console.log("Servidor en http://localhost:3000");
+app.listen(3001, () => {
+    console.log("http://localhost:3001/robot ");
 });
