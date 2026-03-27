@@ -19,46 +19,62 @@
 
 const express = require("express");
 const router = express.Router();
-const fetch = require("node-fetch");
 
-// 🔥 IP DEL ESP32
 const ESP32_URL = "http://192.168.100.114";
-let enMovimiento = false;
-// 🔥 curva suave (tipo lógica difusa simple)
-const curva = (v) => {
-    let sign = v >= 0 ? 1 : -1;
-    return sign * (v * v / 100);
-};
+
+let lastCommandTime = Date.now();
+let lastSend = 0;
 
 // 🚀 MOVE
 router.get("/move", async (req, res) => {
 
+    // 🔥 registrar actividad
+    lastCommandTime = Date.now();
+
+    // 🔥 AUTO STOP
+    setTimeout(async () => {
+        if (Date.now() - lastCommandTime > 200) {
+            console.log("AUTO STOP");
+            try {
+                await fetch(`${ESP32_URL}/stop`);
+            } catch (e) {}
+        }
+    }, 250);
+
+    // 🔥 limitar frecuencia
+    const now = Date.now();
+    if (now - lastSend < 80) {
+        return res.json({ ok: true });
+    }
+    lastSend = now;
+
     let x = parseFloat(req.query.x || 0);
     let y = parseFloat(req.query.y || 0);
 
-    // 🔥 DEAD ZONE (MUY IMPORTANTE)
-    if (Math.abs(x) < 1 && Math.abs(y) < 1) {
-        console.log("STOP por zona muerta");
-
-        await fetch(`${ESP32_URL}/stop`);
-
-        return res.json({ ok: true, stop: true });
-    }
+    // 🔥 ESCALA
+    x = x * 8;
+    y = y * 8;
 
     console.log("RAW:", x, y);
 
-    // 🔥 suavizar joystick
-    x = curva(x);
-    y = curva(y);
+    // 🔥 DEAD ZONE
+    if (Math.abs(x) < 2 && Math.abs(y) < 2) {
+        await fetch(`${ESP32_URL}/stop`);
+        return res.json({ ok: true });
+    }
 
-    // 🔥 menos giro si va rápido (clave)
-    let factorGiro = 1 - Math.abs(y) / 100;
-    x = x * factorGiro;
+    // =========================
+    // 🔥 CONTROL POR ÁNGULO
+    // =========================
+    let angle = Math.atan2(y, x);
+    let magnitude = Math.sqrt(x * x + y * y);
 
-    // 🔥 mezcla diferencial
-    let left = y + x;
-    let right = y - x;
+    magnitude = Math.min(100, magnitude);
 
+    let left = magnitude * Math.sin(angle + Math.PI / 4);
+    let right = magnitude * Math.sin(angle - Math.PI / 4);
+
+    // 🔥 NORMALIZAR
     left = Math.max(-100, Math.min(100, left));
     right = Math.max(-100, Math.min(100, right));
 
@@ -68,13 +84,19 @@ router.get("/move", async (req, res) => {
     let fr = Math.abs(right) * 2.5;
     let rr = Math.abs(right) * 2.5;
 
-    // 🔥 mínimo para mover motor
-    const MIN_PWM = 80;
+    // 🔥 MINIMO SOLO SI AVANZA
+    const esGiro = Math.abs(y) < 5;
+    const MIN_PWM = esGiro ? 0 : 90;
 
     fl = fl > 0 ? fl + MIN_PWM : 0;
     rl = rl > 0 ? rl + MIN_PWM : 0;
     fr = fr > 0 ? fr + MIN_PWM : 0;
     rr = rr > 0 ? rr + MIN_PWM : 0;
+
+    fl = Math.round(fl);
+    rl = Math.round(rl);
+    fr = Math.round(fr);
+    rr = Math.round(rr);
 
     console.log("PWM:", fl, rl, fr, rr);
 
@@ -97,17 +119,9 @@ router.get("/move", async (req, res) => {
 // 🛑 STOP
 router.get("/stop", async (req, res) => {
     try {
-        console.log("Conectando a ESP32...");
-
-        const response = await fetch(`${ESP32_URL}/stop`);
-
-        const text = await response.text();
-
-        console.log("RESPUESTA ESP32:", text);
-
+        await fetch(`${ESP32_URL}/stop`);
         res.json({ ok: true });
     } catch {
-        console.error("ERROR REAL:", err);
         res.status(500).json({ error: "Error en stop" });
     }
 });
