@@ -4,84 +4,80 @@ import { adelante, atras, stop } from "../api/robotApi";
 
 const Control = () => {
 
-    // 🔥 CORRECTO (persistente)
     const lastSend = useRef(0);
 
-    // const handleMove = (event) => {
+    // 🔥 para evitar ruido
+    let lastX = useRef(0);
+    let lastY = useRef(0);
 
-    //     const now = Date.now();
+    // 🔥 control de stop continuo
+    let stopInterval = useRef(null);
 
-    //     // 🔥 LIMITAR ENVÍOS (MEJOR 150 ms)
-    //     if (now - lastSend.current < 150) return;
-    //     lastSend.current = now;
+    const handleMove = (event) => {
 
-    //     const y = event.y;
-    //     const x = event.x;
+        const now = Date.now();
 
-    //     let base = Math.abs(y) * 2;
+        // 🔥 limitar frecuencia (mejorado)
+        if (now - lastSend.current < 100) return;
+        lastSend.current = now;
 
-    //     let fl = base + 90;
-    //     let rl = base + 90;
-    //     let fr = base + 90;
-    //     let rr = base + 90;
+        let x = Math.round(event.x);
+        let y = Math.round(event.y);
 
-    //     // 🎮 lógica de giro
-    //     if (x > 0) {
-    //         fr -= x;
-    //         rr -= x;
-    //     } else {
-    //         fl += x;
-    //         rl += x;
-    //     }
+        // 🔥 filtro de ruido (muy importante)
+        // if (Math.abs(x - lastX.current) < 5 && Math.abs(y - lastY.current) < 5) {
+        //     return;
+        // }
 
-    //     // límites
-    //     fl = Math.max(0, Math.min(255, fl));
-    //     rl = Math.max(0, Math.min(255, rl));
-    //     fr = Math.max(0, Math.min(255, fr));
-    //     rr = Math.max(0, Math.min(255, rr));
+        lastX.current = x;
+        lastY.current = y;
 
-    //     if (y > 0) {
-    //         adelante(fl, rl, fr, rr);
-    //     } else {
-    //         atras(fl, rl, fr, rr);
-    //     }
-    // };
+        // 🔥 detener interval de stop si estaba activo
+        if (stopInterval.current) {
+            clearInterval(stopInterval.current);
+            stopInterval.current = null;
+        }
 
+        // 🔥 MEZCLA DIFERENCIAL (CORRECTA)
+        let left = y + x;
+        let right = y - x;
+        console.log("MOVE", x, y);
+        // 🔥 normalizar
+        left = Math.max(-100, Math.min(100, left));
+        right = Math.max(-100, Math.min(100, right));
 
-const handleMove = (event) => {
+        // 🔥 convertir a PWM
+        let fl = Math.abs(left) * 2.5;
+        let rl = Math.abs(left) * 2.5;
+        let fr = Math.abs(right) * 2.5;
+        let rr = Math.abs(right) * 2.5;
 
-    const now = Date.now();
-    if (now - lastSend.current < 150) return;
-    lastSend.current = now;
-
-    let x = event.x; // giro (-100 a 100)
-    let y = event.y; // avance (-100 a 100)
-
-    // 🔥 MEZCLA DIFERENCIAL
-    let left = y + x;
-    let right = y - x;
-
-    // 🔥 NORMALIZAR
-    left = Math.max(-100, Math.min(100, left));
-    right = Math.max(-100, Math.min(100, right));
-
-    // 🔥 ESCALAR A PWM
-    let fl = Math.abs(left) * 85;
-    let rl = Math.abs(left) * 85;
-    let fr = Math.abs(right) * 85;
-    let rr = Math.abs(right) * 85;
-
-    if (y >= 0) {
-        adelante(fl, rl, fr, rr);
-    } else {
-        atras(fl, rl, fr, rr);
-    }
-};
-
-
+        if (y >= 0) {
+            adelante(fl, rl, fr, rr);
+        } else {
+            atras(fl, rl, fr, rr);
+        }
+    };
 
     const handleStop = () => {
-        stop();
+
+        // limpiar si ya había uno
+        if (stopInterval.current) {
+            clearInterval(stopInterval.current);
+        }
+
+        // 🔥 enviar varios stop (SOLUCIÓN CLAVE)
+        stopInterval.current = setInterval(() => {
+            stop();
+        }, 50);
+
+        // detener después de 300 ms
+        setTimeout(() => {
+            if (stopInterval.current) {
+                clearInterval(stopInterval.current);
+                stopInterval.current = null;
+            }
+        }, 300);
     };
 
     return (
@@ -91,5 +87,7 @@ const handleMove = (event) => {
         </div>
     );
 };
+
+
 
 export default Control;

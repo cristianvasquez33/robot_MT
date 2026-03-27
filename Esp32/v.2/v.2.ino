@@ -25,11 +25,17 @@ int ENB_IZQ = 25; // RL
 int ENA_DER = 32; // FR
 int ENB_DER = 4;  // RR
 
-// 🔥 VARIABLES DE SUAVIZADO
+// 🔥 VARIABLES ACTUALES
 int fl_actual = 0;
 int rl_actual = 0;
 int fr_actual = 0;
 int rr_actual = 0;
+
+// 🔥 VARIABLES OBJETIVO
+int fl_target = 0;
+int rl_target = 0;
+int fr_target = 0;
+int rr_target = 0;
 
 // 🔹 FUNCIONES
 
@@ -47,7 +53,7 @@ int getValue(String req, String key, int def) {
 
 // 🔥 SUAVIZADO
 int suavizar(int actual, int objetivo) {
-  int paso = 10; // 🔧 AJUSTABLE
+  int paso = 15; // 🔧 AJUSTA SI QUIERES
 
   if (actual < objetivo) {
     actual += paso;
@@ -60,7 +66,7 @@ int suavizar(int actual, int objetivo) {
   return actual;
 }
 
-// 🔹 ADELANTE
+// 🔹 ADELANTE (solo define objetivo)
 void adelante4(int fl, int rl, int fr, int rr) {
 
   digitalWrite(IN1, HIGH);
@@ -75,19 +81,13 @@ void adelante4(int fl, int rl, int fr, int rr) {
   digitalWrite(IN7, HIGH);
   digitalWrite(IN8, LOW);
 
-  // 🔥 SUAVIZADO
-  fl_actual = suavizar(fl_actual, fl);
-  rl_actual = suavizar(rl_actual, rl);
-  fr_actual = suavizar(fr_actual, fr);
-  rr_actual = suavizar(rr_actual, rr);
-
-  ledcWrite(ENA_IZQ, fl_actual);
-  ledcWrite(ENB_IZQ, rl_actual);
-  ledcWrite(ENA_DER, fr_actual);
-  ledcWrite(ENB_DER, rr_actual);
+  fl_target = fl;
+  rl_target = rl;
+  fr_target = fr;
+  rr_target = rr;
 }
 
-// 🔹 ATRÁS
+// 🔹 ATRÁS (solo define objetivo)
 void atras4(int fl, int rl, int fr, int rr) {
 
   digitalWrite(IN1, LOW);
@@ -102,16 +102,10 @@ void atras4(int fl, int rl, int fr, int rr) {
   digitalWrite(IN7, LOW);
   digitalWrite(IN8, HIGH);
 
-  // 🔥 SUAVIZADO
-  fl_actual = suavizar(fl_actual, fl);
-  rl_actual = suavizar(rl_actual, rl);
-  fr_actual = suavizar(fr_actual, fr);
-  rr_actual = suavizar(rr_actual, rr);
-
-  ledcWrite(ENA_IZQ, fl_actual);
-  ledcWrite(ENB_IZQ, rl_actual);
-  ledcWrite(ENA_DER, fr_actual);
-  ledcWrite(ENB_DER, rr_actual);
+  fl_target = fl;
+  rl_target = rl;
+  fr_target = fr;
+  rr_target = rr;
 }
 
 // 🔹 STOP
@@ -127,16 +121,10 @@ void parar() {
   digitalWrite(IN7, LOW);
   digitalWrite(IN8, LOW);
 
-  // 🔥 suavizado hacia 0
-  fl_actual = suavizar(fl_actual, 0);
-  rl_actual = suavizar(rl_actual, 0);
-  fr_actual = suavizar(fr_actual, 0);
-  rr_actual = suavizar(rr_actual, 0);
-
-  ledcWrite(ENA_IZQ, fl_actual);
-  ledcWrite(ENB_IZQ, rl_actual);
-  ledcWrite(ENA_DER, fr_actual);
-  ledcWrite(ENB_DER, rr_actual);
+  fl_target = 0;
+  rl_target = 0;
+  fr_target = 0;
+  rr_target = 0;
 }
 
 // 🚀 SETUP
@@ -176,6 +164,18 @@ void setup() {
 // 🌐 LOOP
 void loop() {
 
+  // 🔥 CONTROL CONTINUO (CLAVE)
+  fl_actual = suavizar(fl_actual, fl_target);
+  rl_actual = suavizar(rl_actual, rl_target);
+  fr_actual = suavizar(fr_actual, fr_target);
+  rr_actual = suavizar(rr_actual, rr_target);
+
+  ledcWrite(ENA_IZQ, fl_actual);
+  ledcWrite(ENB_IZQ, rl_actual);
+  ledcWrite(ENA_DER, fr_actual);
+  ledcWrite(ENB_DER, rr_actual);
+
+  // 🌐 SERVIDOR
   WiFiClient client = server.available();
 
   if (client) {
@@ -221,5 +221,4 @@ void loop() {
     client.stop();
   }
 }
-
 //v.2
