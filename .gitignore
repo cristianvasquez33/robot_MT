@@ -1,0 +1,24 @@
+# ======================
+# FRONTEND (React)
+# ======================
+robot-control/node_modules/
+robot-control/build/
+robot-control/.env*
+
+# ======================
+# BACKEND (Node o Java)
+# ======================
+backend/node_modules/
+backend/build/
+backend/dist/
+backend/.env*
+
+# NetBeans (si usas Java)
+#backend/nbproject/private/
+
+# ======================
+# GENERALES
+# ======================
+*.log
+.DS_Store
+Thumbs.db
