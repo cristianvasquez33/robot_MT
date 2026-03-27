@@ -1,22 +1,4 @@
-const BASE_URL = "http://192.168.100.109";
-
-// 🔥 controlador global
-let controller = null;
-
-// 🎮 CONTROL PRINCIPAL
-export const move = (x, y) => {
-
-    // cancelar petición anterior
-    if (controller) {
-        controller.abort();
-    }
-
-    controller = new AbortController();
-
-    fetch(`${BASE_URL}/move?x=${x}&y=${y}`, {
-        signal: controller.signal
-    }).catch(() => {});
-};
+const BASE_URL = "http://192.168.100.114";
 
 // 🔥 OPCIONAL (ya casi no necesitas estos)
 export const adelante = (fl, rl, fr, rr) => {
