@@ -1,0 +1,134 @@
+/* src/styles/joystick.css */
+
+.joystick-wrapper {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+/* contenedor principal */
+.radar {
+    position: relative;
+    width: 150px;
+    height: 150px;
+}
+
+/* 🔥 capa visual (NO bloquea eventos) */
+.visual-layer {
+    position: absolute;
+    width: 150px;
+    height: 150px;
+    border-radius: 50%;
+    background: radial-gradient(circle, #faf6f6, #ddd);
+    border: 2px solid #111010;
+
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+    pointer-events: none; /* 🔥 clave */
+}
+
+/* 🎯 centro */
+.center-dot {
+    width: 6px;
+    height: 6px;
+    background: rgb(121, 115, 115);
+    border-radius: 50%;
+    position: absolute;
+}
+
+/* 🔵 indicador */
+.indicator {
+    width: 14px;
+    height: 14px;
+    background: rgb(241, 238, 241);
+    border-radius: 50%;
+    position: absolute;
+    transition: transform 0.05s linear;
+}
+
+/* 🔥 joystick interactivo */
+.joystick-hitbox {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 150px;
+    height: 150px;
+    z-index: 10;
+
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+/* info */
+.info {
+    margin-top: 10px;
+    text-align: center;
+}
+
+
+/* 🔥 direcciones */
+.direction {
+    position: absolute;
+    font-size: 18px;
+    font-weight: bold;
+    color: rgba(0,0,0,0.4);
+}
+
+/* posiciones */
+.direction.up {
+    top: 5px;
+    left: 50%;
+    transform: translateX(-50%);
+}
+
+.direction.down {
+    bottom: 5px;
+    left: 50%;
+    transform: translateX(-50%);
+}
+
+.direction.left {
+    left: 5px;
+    top: 50%;
+    transform: translateY(-50%);
+}
+
+.direction.right {
+    right: 5px;
+    top: 50%;
+    transform: translateY(-50%);
+}
+
+/* diagonales */
+.direction.up-right {
+    top: 10px;
+    right: 10px;
+}
+
+.direction.up-left {
+    top: 10px;
+    left: 10px;
+}
+
+.direction.down-right {
+    bottom: 10px;
+    right: 10px;
+}
+
+.direction.down-left {
+    bottom: 10px;
+    left: 10px;
+}
+
+.direction {
+    transition: all 0.2s ease;
+}
+
+.direction.active {
+    color: red;
+    text-shadow: 0 0 10px red;
+    transform: scale(1.3);
+}

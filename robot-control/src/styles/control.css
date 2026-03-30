@@ -1,0 +1,7 @@
+/* src/styles/joystick.css */
+
+.joystick-container {
+    margin-top: 50px;
+    display: flex;
+    justify-content: center;
+}
