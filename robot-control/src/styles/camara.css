@@ -1,0 +1,7 @@
+.stream-video {
+    width: 99%;
+    height: 80%;
+    background: rgb(184, 172, 172);
+    border-radius: 12px;
+    border: 2px solid rgb(20, 19, 19);
+}

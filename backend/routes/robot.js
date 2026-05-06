@@ -20,7 +20,7 @@
 const express = require("express");
 const router = express.Router();
 
-const ESP32_URL = "http://192.168.100.114";
+const ESP32_URL = "http://192.168.100.103";
 
 let lastCommandTime = Date.now();
 let lastSend = 0;

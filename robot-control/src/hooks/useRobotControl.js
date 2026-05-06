@@ -29,7 +29,16 @@ export const useRobotControl = () => {
 
         console.log("LOGICA → X:", x, "Y:", y);
 
-        move(x, y);
+        let left = y + x;
+        let right = y - x;
+
+        // normalizar a -100 / 100
+        left = Math.max(-100, Math.min(100, left));
+        right = Math.max(-100, Math.min(100, right));
+
+        console.log("MOTORES → L:", left, "R:", right);
+
+        move(left, right);
     };
 
     const handleStop = () => {

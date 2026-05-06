@@ -117,7 +117,7 @@ const Control = () => {
 
     return (
         <div style={{ textAlign: "center" }}>
-            <h1>🤖 Control Robot</h1>
+            <h1>🤖 Control --------Robot</h1>
             <JoystickControl onMove={handleMove} onStop={handleStop} />
         </div>
     );

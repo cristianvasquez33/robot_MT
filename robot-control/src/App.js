@@ -1,8 +1,8 @@
 import React from "react";
 import Control from "./pages/Control";
 
-function App() {
+
+function App() { 
   return <Control />;
 }
-
 export default App;
