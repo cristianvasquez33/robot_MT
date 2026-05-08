@@ -28,7 +28,11 @@ const Control = () => {
 
 
                 <div className="stream-video">
-                    📷 Stream aquí
+                    <img
+                        src="http://192.168.100.20:8080/?action=stream"
+                        alt="stream"
+                        style={{ width: "100%", height: "100%", objectFit: "cover" }}
+                    />
                 </div>
 
                 <div >
@@ -42,14 +46,14 @@ const Control = () => {
 
                 <div className="contenedor_cotrol" >  <h1 className="info">Control Robot</h1>
 
-                <div>
-                    <JoystickControl
-                        onMove={handleMove}
-                        onStop={handleStop}
-                    />
-                </div>
-                <div className="alinear_derecha" ><SwitchAuto auto={auto} setAuto={setAuto} /> <SwitchColor /></div>
-                <div ></div>
+                    <div>
+                        <JoystickControl
+                            onMove={handleMove}
+                            onStop={handleStop}
+                        />
+                    </div>
+                    <div className="alinear_derecha" ><SwitchAuto auto={auto} setAuto={setAuto} /> <SwitchColor /></div>
+                    <div ></div>
                 </div>
                 <div className="brazo">
                     <BrazoControl />
@@ -57,7 +61,7 @@ const Control = () => {
 
 
 
-                
+
 
 
             </div>

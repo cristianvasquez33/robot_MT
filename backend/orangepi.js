@@ -3,7 +3,7 @@ const ssh = new NodeSSH();
 
 async function ejecutar(comando) {
     await ssh.connect({
-        host: "192.168.100.118", // CAMBIAR
+        host: "192.168.100.20", // CAMBIAR
         username: "dvcun",
         password: "12345"
     });

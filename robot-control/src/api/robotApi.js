@@ -1,7 +1,7 @@
 // src/api/robotApi.js
 
 
-const BASE_URL = "http://localhost:3001/robot";
+//const BASE_URL = "http://localhost:3001/robot";
 
 // 🔥 OPCIONAL (ya casi no necesitas estos)
 // export const adelante = (fl, rl, fr, rr) => {
@@ -34,40 +34,45 @@ const BASE_URL = "http://localhost:3001/robot";
 
 
 
-
+// src/api/robotApi.js
 
 // 🔥 función interna reutilizable
-const sendRequest = async (endpoint) => {
+// src/api/robotApi.js
+
+const BASE_URL = "http://192.168.100.20:5000"; // 🔥 cambia si es necesario
+
+// 🔥 enviar comando joystick
+export const move = async (comando) => {
+
     try {
-        const url = `${BASE_URL}${endpoint}`;
+        console.log("🚗 ENVIANDO:", comando);
 
-        console.log("🌐 REQUEST:", url);
-
-        const response = await fetch(url);
-
-        if (!response.ok) {
-            console.error("❌ Error HTTP:", response.status);
-        }
+        await fetch(`${BASE_URL}/control`, {
+            method: "POST",
+            headers: {
+                "Content-Type": "text/plain"
+            },
+            body: comando
+        });
 
     } catch (error) {
-        console.error("❌ Error de red:", error.message);
+        console.error("❌ Error:", error);
     }
 };
 
-// 🔥 mover robot
-export const move = (x, y) => {
-
-    // 🧠 validación básica
-    if (x === 0 && y === 0) return;
-
-    console.log("🚗 MOVE:", x, y);
-
-    sendRequest(`/move?x=${x}&y=${y}`);
-};
-
 // 🔥 detener robot
-export const stop = () => {
-    console.log("🛑 STOP");
+export const stop = async () => {
 
-    sendRequest(`/stop`);
+    try {
+        await fetch(`${BASE_URL}/control`, {
+            method: "POST",
+            headers: {
+                "Content-Type": "text/plain"
+            },
+            body: "x=0&y=0&f=0"
+        });
+
+    } catch (error) {
+        console.error("❌ Error STOP:", error);
+    }
 };
