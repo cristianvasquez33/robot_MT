@@ -8,55 +8,33 @@ CORS(app)
 # 🔥 UART
 ser = serial.Serial('/dev/ttyS5', 115200)
 
-# 🔥 calibración lateral
-k = 10  
-
-# 🔥 PWM rango útil
-PWM_MIN = 200   # ~80%
-PWM_MAX = 255   # 100%
-
-# ================= FUNCION PRINCIPAL =================
+# ================= FUNCION BASE =================
 
 def enviar_joystick(x, y, f):
 
-    # 🔹 zona muerta (evita vibración)
-    if abs(x) < 5: x = 0
-    if abs(y) < 5: y = 0
+    # 🔴 1. limitar joystick (evita valores raros)
+    x = max(-1, min(1, x))
+    y = max(-1, min(1, y))
 
-    # 🔹 si no hay fuerza → parar
-    if f < 5:
-        fl = rl = fr = rr = 0
-    else:
+    # 🔴 2. mezcla básica (tipo diferencial)
+    fl = (y + x)
+    rl = (y - x)
+    fr = (y - x)
+    rr = (y + x)
 
-        # 🔹 mecanum base
-        fl = (y + x)
-        rl = (y - x)
-        fr = (y - x)
-        rr = (y + x)
+    # 🔴 3. ESCALA REAL A PWM (0-255)
+    fl = int(fl * 255 * f / 100)
+    rl = int(rl * 255 * f / 100)
+    fr = int(fr * 255 * f / 100)
+    rr = int(rr * 255 * f / 100)
 
-        # 🔥 corrección lateral
-        fl += k
-        rl += k
-        fr -= k
-        rr -= k
+    # 🔴 4. limitar seguridad
+    fl = max(-255, min(255, fl))
+    rl = max(-255, min(255, rl))
+    fr = max(-255, min(255, fr))
+    rr = max(-255, min(255, rr))
 
-        # 🔹 normalizar (clave)
-        max_val = max(abs(fl), abs(rl), abs(fr), abs(rr), 1)
-
-        fl /= max_val
-        rl /= max_val
-        fr /= max_val
-        rr /= max_val
-
-        # 🔥 escalar PWM 80–100%
-        pwm = PWM_MIN + (PWM_MAX - PWM_MIN) * (f / 100)
-
-        fl = int(fl * pwm)
-        rl = int(rl * pwm)
-        fr = int(fr * pwm)
-        rr = int(rr * pwm)
-
-    # 🔹 enviar UART
+    # 🔴 5. enviar UART
     cmd = f"fl={fl}&rl={rl}&fr={fr}&rr={rr}\n"
     ser.write(cmd.encode())
 
@@ -68,11 +46,10 @@ def enviar_joystick(x, y, f):
 @app.route("/control", methods=["POST"])
 def control():
 
-    data = request.data.decode()
-    print("HTTP →", data)
-
     try:
-        valores = dict(item.split("=") for item in data.split("&"))
+        valores = request.form
+
+        print("HTTP →", valores)
 
         x = float(valores.get("x", 0))
         y = float(valores.get("y", 0))
