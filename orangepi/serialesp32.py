@@ -12,30 +12,37 @@ ser = serial.Serial('/dev/ttyS5', 115200)
 
 def enviar_joystick(x, y, f):
 
-    # 🔴 1. limitar joystick (evita valores raros)
+    # limitar
     x = max(-1, min(1, x))
     y = max(-1, min(1, y))
 
-    # 🔴 2. mezcla básica (tipo diferencial)
+    # 🔴 MECANUM CORREGIDO SEGÚN TU HARDWARE
     fl = (y + x)
-    rl = (y - x)
     fr = (y - x)
+    rl = (y - x)
     rr = (y + x)
 
-    # 🔴 3. ESCALA REAL A PWM (0-255)
-    fl = int(fl * 255 * f / 100)
-    rl = int(rl * 255 * f / 100)
-    fr = int(fr * 255 * f / 100)
-    rr = int(rr * 255 * f / 100)
+    # 🔴 REORDENAMIENTO A TU MAPEO
+    motor1 = fl   # FL
+    motor2 = rl   # RL
+    motor3 = rr   # RR (antes fr)
+    motor4 = fr   # FR (antes rr)
 
-    # 🔴 4. limitar seguridad
-    fl = max(-255, min(255, fl))
-    rl = max(-255, min(255, rl))
-    fr = max(-255, min(255, fr))
-    rr = max(-255, min(255, rr))
+    # escalar
+    motor1 = int(motor1 * 255 * f / 100)
+    motor2 = int(motor2 * 255 * f / 100)
+    motor3 = int(motor3 * 255 * f / 100)
+    motor4 = int(motor4 * 255 * f / 100)
 
-    # 🔴 5. enviar UART
-    cmd = f"fl={fl}&rl={rl}&fr={fr}&rr={rr}\n"
+    # limitar
+    motor1 = max(-255, min(255, motor1))
+    motor2 = max(-255, min(255, motor2))
+    motor3 = max(-255, min(255, motor3))
+    motor4 = max(-255, min(255, motor4))
+
+    # enviar (IMPORTANTE ORDEN)
+    cmd = f"fl={motor1}&rl={motor2}&fr={motor3}&rr={motor4}\n"
+
     ser.write(cmd.encode())
 
     print("UART →", cmd)
@@ -51,11 +58,14 @@ def control():
 
         print("HTTP →", valores)
 
+
         x = float(valores.get("x", 0))
         y = float(valores.get("y", 0))
         f = float(valores.get("f", 0))
 
         enviar_joystick(x, y, f)
+
+
 
         return "OK"
 
