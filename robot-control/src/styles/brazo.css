@@ -1,14 +1,24 @@
 /* CONTENEDOR GENERAL */
 .brazo-container {
-    width: auto;
+
+    width: 100%;
+
+    max-width: 450px;
+
+    box-sizing: border-box;
+
     background: #e7dede;
+
     padding: 15px;
+
     border-radius: 12px;
+
     color: rgb(36, 32, 32);
+
     font-family: Arial, sans-serif;
+
     border: 2px solid #333;
-    
-    
+
 }
 
 /* TÍTULO */
@@ -60,4 +70,53 @@ input[type="range"] {
 /* HOVER */
 .btn:hover {
     transform: scale(1.05);
+}
+
+/* fila superior */
+
+.header-brazo {
+
+    display: flex;
+
+    justify-content: space-between;
+
+    align-items: center;
+
+    gap: 15px;
+
+    flex-wrap: wrap;
+
+    margin-bottom: 15px;
+
+}
+
+
+/* grupo switches */
+
+.switches {
+
+    display: flex;
+
+    align-items: center;
+
+    gap: 12px;
+
+}
+
+@media(max-width:768px) {
+
+    .brazo-container {
+
+        max-width: 100%;
+
+        padding: 10px;
+
+    }
+
+    .btn {
+
+        width: 100%;
+
+    }
+
 }

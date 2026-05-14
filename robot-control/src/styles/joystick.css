@@ -1,10 +1,11 @@
 /* src/styles/joystick.css */
 
 .contenedor-joystick {
-  position: relative;
-  width: 100%;
-  height: 500px;
-  background: lightgray;
+    position: relative;
+    width: 100%;
+    min-height: 300px;
+    height: auto;
+    background: lightgray;
 }
 
 
@@ -159,12 +160,24 @@
 
 /* CONTENEDOR PRINCIPAL */
 .container {
+
     display: flex;
-    height: 100vh;
+
+    align-items: flex-start;
+
+    justify-content: center;
+
+    gap: 20px;
+
+    flex-wrap: wrap;
+
+    height: auto;
+
+    width: 100%;
 }
 
 /* IZQUIERDA */
-.left { 
+.left {
     color: rgb(20, 20, 20);
     display: flex;
     justify-content: center;
@@ -179,4 +192,62 @@
     flex-direction: column;
     justify-content: center;
     align-items: center;
+}
+
+
+@media(max-width:768px) {
+
+    .contenedor-joystick {
+
+        min-height: 220px;
+
+    }
+
+    .radar {
+
+        width: 120px;
+        height: 120px;
+
+    }
+
+    .visual-layer {
+
+        width: 120px;
+        height: 120px;
+
+    }
+
+    .joystick-hitbox {
+
+        width: 120px;
+        height: 120px;
+
+    }
+
+
+
+    @media(max-width:768px) {
+
+        .container {
+
+            flex-direction: column;
+
+            align-items: center;
+
+        }
+
+        .right {
+
+            width: 100%;
+
+        }
+
+        .left {
+
+            width: 100%;
+
+        }
+
+    }
+
 }

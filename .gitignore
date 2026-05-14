@@ -4,6 +4,8 @@
 robot-control/node_modules/
 robot-control/build/
 robot-control/.env*
+robot-control/package.json
+robot-control/package-lock.json
 
 # ======================
 # BACKEND (Node o Java)

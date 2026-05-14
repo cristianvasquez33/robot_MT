@@ -1,7 +1,20 @@
 .stream-video {
-    width: 99%;
-    height: 80%;
+
+    width: 100%;
+    min-height: 300px;
+    height: auto;
+    aspect-ratio: 16/9;
     background: rgb(184, 172, 172);
     border-radius: 12px;
     border: 2px solid rgb(20, 19, 19);
+    overflow: hidden;
+
+}
+
+@media(max-width:768px) {
+
+    .stream-video {
+        min-height: 220px;
+    }
+
 }
