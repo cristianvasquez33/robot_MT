@@ -1,5 +1,6 @@
 #include <Wire.h>
 #include <Adafruit_PWMServoDriver.h>
+#include "DHT.h"
 
 // ================= PCA9685 =================
 Adafruit_PWMServoDriver pca = Adafruit_PWMServoDriver(0x40);
@@ -7,7 +8,19 @@ Adafruit_PWMServoDriver pca = Adafruit_PWMServoDriver(0x40);
 // ================= UART =================
 String comando = "";
 
-// ================= PINES =================
+// ================= DHT22 =================
+#define DHTPIN 34
+#define DHTTYPE DHT22
+DHT dht(DHTPIN, DHTTYPE);
+
+// ================= COLOR =================
+int color_detectado = 0;
+// 0 = nada
+// 1 = rojo
+// 2 = amarillo
+// 3 = verde
+
+// ================= PINES MOTORES =================
 int IN1 = 14;
 int IN2 = 27;
 int IN3 = 26;
@@ -15,14 +28,19 @@ int IN4 = 13;
 
 int IN5 = 18;
 int IN6 = 19;
-int IN7 = 23; // cambiado
-int IN8 = 5;  // cambiado
+int IN7 = 23;
+int IN8 = 5;
 
 // PWM motores
 int ENA_IZQ = 33;
 int ENB_IZQ = 25;
 int ENA_DER = 32;
 int ENB_DER = 4;
+
+// ================= PISTÓN =================
+int PISTON_IN1 = 12;
+int PISTON_IN2 = 2;
+int PISTON_EN  = 15;
 
 // ================= VARIABLES =================
 int fl_actual = 0;
@@ -88,8 +106,48 @@ void setMotor(int in1, int in2, int velocidad) {
 
 // ================= SERVOS =================
 void moverServo(int canal, int angulo) {
+
+  // protección mínima servo 3
+  if (canal == 2 && angulo > 120) angulo = 120;
+
   int pulso = map(angulo, 0, 180, 100, 500);
   pca.setPWM(canal, 0, pulso);
+}
+
+// ================= LED PCA9685 =================
+void actualizarLED() {
+
+  // apagar todos
+  pca.setPWM(4, 0, 0);
+  pca.setPWM(5, 0, 0);
+  pca.setPWM(6, 0, 0);
+
+  if (color_detectado == 1) pca.setPWM(4, 0, 4095);
+  else if (color_detectado == 2) pca.setPWM(5, 0, 4095);
+  else if (color_detectado == 3) pca.setPWM(6, 0, 4095);
+}
+
+// ================= PISTÓN =================
+void moverPiston(int velocidad) {
+
+  int pwm = abs(velocidad);
+
+  if (pwm > 200) pwm = 200; // protección opcional
+
+  if (velocidad > 0) {
+    digitalWrite(PISTON_IN1, HIGH);
+    digitalWrite(PISTON_IN2, LOW);
+  } 
+  else if (velocidad < 0) {
+    digitalWrite(PISTON_IN1, LOW);
+    digitalWrite(PISTON_IN2, HIGH);
+  } 
+  else {
+    digitalWrite(PISTON_IN1, LOW);
+    digitalWrite(PISTON_IN2, LOW);
+  }
+
+  ledcWrite(PISTON_EN, pwm);
 }
 
 // ================= PROCESAR =================
@@ -100,14 +158,16 @@ void procesar(String cmd) {
   int fr = getValue(cmd, "fr", 0);
   int rr = getValue(cmd, "rr", 0);
 
-  // NUEVO: servos
   servo1 = getValue(cmd, "s1", servo1);
   servo2 = getValue(cmd, "s2", servo2);
   servo3 = getValue(cmd, "s3", servo3);
   servo4 = getValue(cmd, "s4", servo4);
 
+  color_detectado = getValue(cmd, "c", color_detectado);
+
+  int p = getValue(cmd, "p", 0);
+
   Serial.println(cmd);
-  
 
   setMotor(IN1, IN2, fl);
   setMotor(IN3, IN4, rl);
@@ -118,6 +178,8 @@ void procesar(String cmd) {
   rl_target = abs(rl);
   fr_target = abs(fr);
   rr_target = abs(rr);
+
+  moverPiston(p);
 }
 
 // ================= SETUP =================
@@ -127,7 +189,6 @@ void setup() {
   Serial.begin(115200);
   Serial2.begin(115200, SERIAL_8N1, 16, 17);
 
-  // motores
   pinMode(IN1, OUTPUT);
   pinMode(IN2, OUTPUT);
   pinMode(IN3, OUTPUT);
@@ -138,23 +199,29 @@ void setup() {
   pinMode(IN7, OUTPUT);
   pinMode(IN8, OUTPUT);
 
+  pinMode(PISTON_IN1, OUTPUT);
+  pinMode(PISTON_IN2, OUTPUT);
+
   ledcAttach(ENA_IZQ, 1000, 8);
   ledcAttach(ENB_IZQ, 1000, 8);
   ledcAttach(ENA_DER, 1000, 8);
   ledcAttach(ENB_DER, 1000, 8);
+  ledcAttach(PISTON_EN, 1000, 8);
 
-  // PCA9685
   Wire.begin(21, 22);
   pca.begin();
   pca.setPWMFreq(50);
 
-  Serial.println("ESP32 + PCA9685 listo");
+  dht.begin();
+
+  Serial.println("SISTEMA COMPLETO OK");
 }
 
 // ================= LOOP =================
 
 void loop() {
 
+  // UART
   while (Serial2.available()) {
     char c = Serial2.read();
 
@@ -163,19 +230,12 @@ void loop() {
     if ((c >= 32 && c <= 126) || c == '\n') {
 
       if (c == '\n') {
-
-        if (comando.length() > 0) {
-          procesar(comando);
-        }
-
+        if (comando.length() > 0) procesar(comando);
         comando = "";
       } 
       else {
         comando += c;
-
-        if (comando.length() > 50) {
-          comando = "";
-        }
+        if (comando.length() > 50) comando = "";
       }
     }
   }
@@ -191,9 +251,29 @@ void loop() {
   ledcWrite(ENA_DER, fr_actual);
   ledcWrite(ENB_DER, rr_actual);
 
-  // mover servos
+  // servos
   moverServo(0, servo1);
   moverServo(1, servo2);
   moverServo(2, servo3);
   moverServo(3, servo4);
+
+  // LED automático
+  actualizarLED();
+
+  // DHT22 cada 2s
+  static unsigned long lastDHT = 0;
+  if (millis() - lastDHT > 2000) {
+
+    float temp = dht.readTemperature();
+    float hum = dht.readHumidity();
+
+    if (!isnan(temp) && !isnan(hum)) {
+      Serial.print("T:");
+      Serial.print(temp);
+      Serial.print(" H:");
+      Serial.println(hum);
+    }
+
+    lastDHT = millis();
+  }
 }
