@@ -7,7 +7,8 @@ import { useRobotControl } from "../hooks/useRobotControl";
 import SwitchAuto from "../components/SwitchAuto";
 import BrazoControl from "../components/BrazoControl";
 import SwitchColor from "../components/SwitchColor";
-
+import PistonControl from "../components/PistonControl";
+import SensorPanel from "../components/SensorPanel";
 import "../styles/control.css";
 import "../styles/layout.css";
 import "../styles/camara.css";
@@ -36,7 +37,7 @@ const Control = () => {
                 </div>
 
                 <div >
-                    hlola
+                    <SensorPanel />
                 </div>
 
             </div>
@@ -59,7 +60,7 @@ const Control = () => {
                     <BrazoControl />
                 </div>
 
-
+                <div className="piston"><PistonControl /></div>
 
 
 

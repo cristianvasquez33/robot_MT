@@ -7,11 +7,14 @@ export default function SensorPanel() {
     const [data, setData] = useState({
 
         temperatura: 0,
-        humedad: 0,
-        auto: false,
-        color: false
+
+        humedad: 0
 
     });
+
+    // ============================================
+    // LOOP
+    // ============================================
 
     useEffect(() => {
 
@@ -31,22 +34,32 @@ export default function SensorPanel() {
 
     }, []);
 
+    // ============================================
+    // UI
+    // ============================================
+
     return (
 
-        <div>
+        <div className="sensor-panel">
 
             <h3>Sensores</h3>
 
-            <p>🌡️ Temp: {data.temperatura} °C</p>
+            <p>
+                🌡️ Temperatura:
+                {" "}
+                {data.temperatura}
+                {" "}
+                °C
+            </p>
 
-            <p>💧 Humedad: {data.humedad} %</p>
-
-            <p>🤖 Auto: {data.auto ? "ON" : "OFF"}</p>
-
-            <p>🎨 Color: {data.color ? "ON" : "OFF"}</p>
+            <p>
+                💧 Humedad:
+                {" "}
+                {data.humedad}
+                {" "}
+                %
+            </p>
 
         </div>
-
     );
-
 }

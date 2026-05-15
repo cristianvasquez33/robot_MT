@@ -76,3 +76,26 @@ export const stop = async () => {
         console.error("❌ Error STOP:", error);
     }
 };
+
+export const getSensors = async () => {
+
+    try {
+
+        const response = await fetch(
+            "http://192.168.100.128:5000/sensor"
+        );
+
+        const data = await response.json();
+
+        return data;
+
+    } catch (error) {
+
+        console.log(
+            "ERROR SENSOR:",
+            error
+        );
+
+        return null;
+    }
+};
