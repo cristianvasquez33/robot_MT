@@ -29,7 +29,7 @@ const Control = () => {
 
                 <div className="stream-video">
                     <img
-                        src="http://192.168.100.20:8080/?action=stream"
+                        src="http://192.168.100.133:8080/?action=stream"
                         alt="stream"
                         style={{ width: "100%", height: "100%", objectFit: "cover" }}
                     />

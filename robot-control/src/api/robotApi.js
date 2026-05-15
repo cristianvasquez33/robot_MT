@@ -39,7 +39,7 @@
 // 🔥 función interna reutilizable
 // src/api/robotApi.js
 
-const BASE_URL = "http://192.168.100.20:5000"; // 🔥 cambia si es necesario
+const BASE_URL = "http://192.168.100.133:5000"; // 🔥 cambia si es necesario
 
 // 🔥 enviar comando joystick
 export const move = async (comando) => {
